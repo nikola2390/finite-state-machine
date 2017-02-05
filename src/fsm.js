@@ -3,30 +3,63 @@ class FSM {
      * Creates new FSM instance.
      * @param config
      */
-    constructor(config) {}
+    constructor(config) {
+
+        if (!config) {
+            throw new Error('There is no config!');
+        } else {
+            this.config = config;
+            this.state = config.initial;
+            this.states = config.states;
+            this.history = [this.state];
+            this.undoHistory = [];
+        }
+
+    }
 
     /**
      * Returns active state.
      * @returns {String}
      */
-    getState() {}
+    getState() {
+
+        return this.state;
+    }
 
     /**
      * Goes to specified state.
      * @param state
      */
-    changeState(state) {}
+    changeState(state) {
+
+        if ( state in this.states) {
+            this.state = state;
+            this.history.push(this.state)
+        } else {
+            throw new Error("state isn't exist");
+        }
+    }
 
     /**
      * Changes state according to event transition rules.
      * @param event
      */
-    trigger(event) {}
+    trigger(event) {
+
+        if ( event in this.config.states[this.state].transitions) {
+            this.changeState(this.config.states[this.state].transitions[event]);
+        } else {
+            throw new Error("event in current state isn't exist");
+        }
+    }
 
     /**
      * Resets FSM state to initial.
      */
-    reset() {}
+    reset() {
+
+        this.state = this.config.initial;
+    }
 
     /**
      * Returns an array of states for which there are specified event transition rules.
@@ -34,26 +67,65 @@ class FSM {
      * @param event
      * @returns {Array}
      */
-    getStates(event) {}
+    getStates(event) {
+
+        let array = [];
+
+        if ( event === undefined) {
+            return Object.keys(this.config.states);
+        }
+
+        for (let state in this.states) {
+            if ( this.states[state].transitions[event]){
+                array.push(state);
+            }
+        }
+        return array;
+    }
 
     /**
      * Goes back to previous state.
      * Returns false if undo is not available.
      * @returns {Boolean}
      */
-    undo() {}
+    undo() {
+
+        if (this.history.length == 1) {
+            return false;
+        } else {
+
+        this.undoHistory.push(this.history.pop());
+        
+        return true;
+        }
+
+    }
 
     /**
      * Goes redo to state.
      * Returns false if redo is not available.
      * @returns {Boolean}
      */
-    redo() {}
+    redo() {
+
+        if (this.undoHistory.length == 0){
+            return false;
+        } else {
+        
+        this.history.push(this.undoHistory.pop());
+        return true;
+        }
+        
+
+    }
 
     /**
      * Clears transition history
      */
-    clearHistory() {}
+    clearHistory() {
+
+        this.history.length = 1;
+    }
 }
 
 module.exports = FSM;
